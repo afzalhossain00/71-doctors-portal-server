@@ -40,6 +40,7 @@ async function run() {
         const appointOptionCollection = client.db('doctorsPortal').collection('appointmentOptions')
         const bookingsCollection = client.db('doctorsPortal').collection('bookings')
         const usersCollection = client.db('doctorsPortal').collection('users')
+        const doctorsCollection = client.db('doctorsPortal').collection('doctors')
 
         // use Aggregate to query multiple collection and then marge data
         app.get('/appointmentOptions', async (req, res) => {
@@ -106,6 +107,12 @@ async function run() {
             res.send(options)
         })
 
+        app.get('/appointmentSpecialty', async (req, res) => {
+            const query = {}
+            const result = await appointOptionCollection.find(query).project({ name: 1 }).toArray()
+            res.send(result)
+        })
+
         /****
          * API Naming Conventions
          * 
@@ -157,7 +164,6 @@ async function run() {
                 const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '4h' })
                 return res.send({ accessToken: token })
             }
-            console.log(user);
             res.status(403).send({ accessToken: '' })
         })
 
@@ -197,6 +203,18 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+        });
+
+        app.get('/doctors', async (req, res) => {
+            const query = {}
+            const doctors = await doctorsCollection.find(query).toArray()
+            res.send(doctors)
+        })
+
+        app.post('/doctors', async (req, res) => {
+            const doctor = req.body;
+            const result = await doctorsCollection.insertOne(doctor);
+            res.send(result)
         })
 
 
